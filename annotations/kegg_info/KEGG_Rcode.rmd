@@ -1,0 +1,75 @@
+# 处理KO注释结果
+```{r}
+names(rice_MSU_BLASTKOALA)[1:3]=names(rice_MSU_GhostKOALA)[1:3]
+names(rice_MSU_KofamKOALA)[1:3]=names(rice_MSU_GhostKOALA)[1:3]
+data=rbind(rice_MSU_BLASTKOALA[1:3],rice_MSU_GhostKOALA[1:3],rice_MSU_KofamKOALA[1:3])
+
+data1=data[order(data$V1),]
+data2=data1[!data1$V2=="",]
+data3=data2[!data2$V2=="-------",]
+ko=data3[1:2]
+data4=data3[!duplicated(ko),]
+data5=subset(data4,grepl("LOC",V1))
+data5$V1=substr(data5$V1,1,nchar(data5$V1)-2)
+data6=subset(data4,!grepl("LOC",V1))
+data7=rbind(data5,data6)
+data7=data7[1:37868,]
+data8=data7[!duplicated(data7[1:2]),]
+```
+
+# 处理KO PATHWAY信息
+```{r}
+library(jsonlite)
+library(purrr)
+library(RCurl)
+options(stringsAsFactors = F)
+library(tibble)
+library(openxlsx)#读取.xlsx文件
+library(clusterProfiler)
+library(dplyr)
+library(stringr)
+library(AnnotationForge)
+options(stringsAsFactors = F)
+#########读取蛋白组注释文件与通路注释文件#########
+KEGG_info='ko00001.json'#from https://www.genome.jp/kegg-bin/get_htext?ko00001
+#########提取通路(Pathway)与通路名称(Name)信息#########
+pathway2name <- tibble(Pathway = character(), Name = character())
+ko2pathway <- tibble(Ko = character(), Pathway = character())
+kegg <- fromJSON(KEGG_info)
+for (a in seq_along(kegg[["children"]][["children"]])) {
+  A <- kegg[["children"]][["name"]][[a]]
+  for (b in seq_along(kegg[["children"]][["children"]][[a]][["children"]])) {
+    B <- kegg[["children"]][["children"]][[a]][["name"]][[b]] 
+    for (c in seq_along(kegg[["children"]][["children"]][[a]][["children"]][[b]][["children"]])) {
+      pathway_info <- kegg[["children"]][["children"]][[a]][["children"]][[b]][["name"]][[c]]
+      pathway_id <- str_match(pathway_info, "ko[0-9]{5}")[1]
+      pathway_name <- str_replace(pathway_info, " \\[PATH:ko[0-9]{5}\\]", "") %>% str_replace("[0-9]{5} ", "")
+      pathway2name <- rbind(pathway2name, tibble(Pathway = pathway_id, Name = pathway_name))
+      kos_info <- kegg[["children"]][["children"]][[a]][["children"]][[b]][["children"]][[c]][["name"]]
+      kos <- str_match(kos_info, "K[0-9]*")[,1]
+      ko2pathway <- rbind(ko2pathway, tibble(Ko = kos, Pathway = rep(pathway_id, length(kos))))
+    }
+  }
+}
+
+#########组建通路(Pathway)与蛋白名称(Query)信息#########
+ALL_KO_KEGG=dplyr::left_join(ko2pathway,pathway2name,by="Pathway")
+ALL_KO_KEGG=ALL_KO_KEGG[!is.na(ALL_KO_KEGG$Pathway),]
+write.table(ALL_KO_KEGG,append = F,quote = F,row.names = F,"ALL_KO_KEGG_INFO.txt",sep = "\t")
+#########建库保存#########
+
+```
+
+
+# 合并注释信息
+```{r}
+names(data4)=c("CDS ID","KO","KO Names")
+names(data8)=c("Gene ID","KO","KO Names")
+names(ALL_KO_KEGG)[1]="KO"
+data4_ALL=dplyr::left_join(data4,ALL_KO_KEGG,by="KO")
+data8_ALL=dplyr::left_join(data8,ALL_KO_KEGG,by="KO")
+
+write.table(data4_ALL,append = F,quote = F,row.names = F,"rice_MSU_CDS_KEGG.txt",sep = "\t")
+write.table(data8_ALL,append = F,quote = F,row.names = F,"rice_MSU_GENE_KEGG.txt",sep = "\t")
+```
+
