@@ -2,7 +2,7 @@
 （整理的不同植物的GO和KEGG注释）
 
 # 注释与整理流程
-## KEGG注释
+## KEGG注释:使用KEGG官方三种注释工具（https://www.genome.jp/tools/kofamkoala/）进行注释，然后整理删除重复。
 ## GO注释
 
 # 结果文件结构
