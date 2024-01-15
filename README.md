@@ -1,5 +1,17 @@
 # Plant-pathway-annotations
 （整理的不同植物的GO和KEGG注释）
+
 # 注释与整理流程
+## KEGG注释
+## GO注释
+
 # 结果文件结构
+## annotations --- 所有注释结果存放文件夹
+### (spacename)_(release）--- 某物种某版本的注释结果存放文件夹
+## 以下是KEGG注释结果
+#### (spacename)_(release)_KofamKOALA.txt --- 某物种某版本的KofamKOALA注释结果
+#### (spacename)_(release)_BLASTKOALA.txt --- 某物种某版本的BLASTKOALA注释结果
+#### (spacename)_(release)_GhostKOALA.txt --- 某物种某版本的GhostKOALA注释结果
+#### (spacename)_(release)_CDS_KEGG.txt --- 某物种某版本的转录本的KEGG注释结果
+#### (spacename)_(release)_GENE_KEGG.txt --- 某物种某版本的基因的KEGG注释结果
 
