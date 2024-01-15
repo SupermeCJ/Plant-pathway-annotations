@@ -2,8 +2,11 @@
 （整理的不同植物的GO和KEGG注释）
 
 # 注释与整理流程
-## KEGG注释:使用KEGG官方三种注释工具（ "https://www.genome.jp/tools/kofamkoala/ "）进行注释，然后整理删除重复。然后从 （“https://www.genome.jp/kegg-bin/get_htext?ko00001.keg”） 获取KO以及pathway信息。并进行合并。
+## KEGG注释
+### 1 使用KEGG官方三种注释工具（ "https://www.genome.jp/tools/kofamkoala/ "）进行注释，然后整理删除重复。
+### 2 从 （“https://www.genome.jp/kegg-bin/get_htext?ko00001.keg”） 获取KO以及pathway信息。并进行合并。
 ## GO注释
+### 1 使用egg-mapper对蛋白进行GO注释
 
 # 结果文件结构
 ## annotations --- 所有注释结果存放文件夹
