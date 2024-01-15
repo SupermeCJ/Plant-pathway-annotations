@@ -1,0 +1,34 @@
+```{r}
+library(stringr)
+annodata=readxl::read_excel("../rice_MSU/rice_MSU_eggnog.xlsx")
+annodata=annodata[c(1,10,21)]
+annodata=annodata[!annodata$GOs=="-",]
+
+gene2go <- data.frame(query = character(),#由于此时存在一蛋白对应多个GO，因此将其拆成一对一的多列储存进新的dataframe中
+                      GOs = character(),
+                      PFAMs = character())
+
+for (row in 1:nrow(annodata)) {
+  GOs <- str_split(annodata[row,"GOs"], ",", simplify = FALSE)[[1]]  
+  gene_id <- annodata[row,"query"][[1]]
+  PFAMs<-annodata[row,"PFAMs"][[1]]
+  tmp <- data.frame(query = rep(gene_id, length(GOs)),
+                    GOID = GOs,
+                    PFAMs = rep(PFAMs, length(GOs)))
+  gene2go <- rbind(gene2go, tmp)} 
+
+
+GO_INFO<- read.delim("D:/植物GO与KEGG注释/GO_info/GO_basic_Description.txt")
+names(GO_INFO)[2]="GOID"
+CDS_gene2go=dplyr::left_join(gene2go,GO_INFO,by="GOID")
+CDS_gene2go=CDS_gene2go[!is.na(CDS_gene2go$Description),]
+write.table(CDS_gene2go,append = F,quote = F,row.names = F,"rice_MSU_CDS_GO.txt",sep = "\t")
+
+data5=subset(CDS_gene2go,grepl("LOC",query))
+data5$query=substr(data5$query,1,nchar(data5$query)-2)
+data6=subset(CDS_gene2go,!grepl("LOC",query))
+data7=rbind(data5,data6)
+data8=data7[!duplicated(data7[1:2]),]
+write.table(data8,append = F,quote = F,row.names = F,"rice_MSU_GENE_GO.txt",sep = "\t")
+```
+
